@@ -1,19 +1,88 @@
 
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useState } from "react";
+
+import Login from "./components/Login.jsx";
+import Logout from "./components/Logout.jsx";
+import Register from "./components/Register.jsx";
+import Dashboard from "./components/Dashboard.jsx";
+import Profile from "./components/Profile.jsx";
+import Edit from "./components/Edit.jsx";
+import "./App.css";
+
 function App() {
+  const [token, setToken] = useState(() => localStorage.getItem("token") || "");
+  const [user, setUser] = useState(null);
+
+  function handleLogin(data) {
+    localStorage.setItem("token", data.token);
+    setToken(data.token);
+    setUser(data.user);
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setToken("");
+    setUser(null);
+  }
+
+  function updateUser(updatedUser) {
+    setUser(updatedUser);
+  }
+
   return (
-    <div>
-      <h1>StudentMart</h1>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+        />
 
-      <h2>Welcome to StudentMart</h2>
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />}
+        />
 
-      <p>Your Online Shopping Application</p>
+        <Route
+          path="/register"
+          element={token ? <Navigate to="/dashboard" replace /> : <Register />}
+        />
 
-      <p>
-        <b>Name:</b> Naznin
-        <br />
-        <b>USN:</b> 1AT24CS136
-      </p>
-    </div>
+        <Route
+          path="/logout"
+          element={token ? <Logout onLogout={handleLogout} /> : <Navigate to="/login" replace />}
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            token ? (
+              <Dashboard token={token} user={user} onLogout={handleLogout} />
+            ) : <Navigate to="/login" replace />
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            token ? (
+              <Profile token={token} user={user} onUserUpdate={updateUser} />
+            ) : <Navigate to="/login" replace />
+          }
+        />
+
+        <Route
+          path="/edit"
+          element={
+            token ? (
+              <Edit token={token} user={user} onUserUpdate={updateUser} />
+            ) : <Navigate to="/login" replace />
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
